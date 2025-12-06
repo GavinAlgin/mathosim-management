@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import { InventoryItem } from '@/hooks/types'
-import { inventoryData as defaultInventoryData } from './data'
 import { RowActions } from '@/components/custom-rowactions'
 import { ExpandRow } from '@/components/custom-expandrow'
 import { cn } from '@/lib/utils'
@@ -10,8 +9,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { RefreshCcwIcon } from 'lucide-react'
 
-export default function InventoryTable() {
-  const [data, setData] = useState<InventoryItem[]>(defaultInventoryData)
+interface InventoryTableProps {
+  data: InventoryItem[];
+  setData: React.Dispatch<React.SetStateAction<InventoryItem[]>>;
+  onEdit: (item: InventoryItem) => void;
+}
+
+export default function InventoryTable({ data, setData, onEdit }: InventoryTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
@@ -44,7 +48,6 @@ export default function InventoryTable() {
   )
 
   const handleRefresh = () => {
-    setData([...defaultInventoryData])
     setSearchQuery('')
     setSelected(new Set())
     setExpandedRow(null)
@@ -52,15 +55,14 @@ export default function InventoryTable() {
 
   return (
     <>
-      {/* ✅ HEADER */}
+      {/* HEADER */}
       <header className="w-full px-4 py-3 bg-white dark:bg-gray-950">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          {/* Total Items */}
+
           <div className="text-lg font-medium">
             Total Items: <span className="font-bold">{filteredData.length}</span>
           </div>
 
-          {/* Search, Filter, Delete */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <Input
               type="text"
@@ -69,8 +71,7 @@ export default function InventoryTable() {
               className="w-full sm:w-64"
             />
             <Button variant="outline" className="flex items-center gap-2" onClick={handleRefresh}>
-              <RefreshCcwIcon className="w-4 h-4" />
-              Refresh
+              <RefreshCcwIcon className="w-4 h-4" /> Refresh
             </Button>
             <Button
               variant="destructive"
@@ -79,10 +80,11 @@ export default function InventoryTable() {
               Delete Selected
             </Button>
           </div>
+
         </div>
       </header>
 
-      {/* ✅ TABLE */}
+      {/* TABLE */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-100">
@@ -108,9 +110,10 @@ export default function InventoryTable() {
               <th className="px-4 py-2 text-left">Quantity</th>
               <th className="px-4 py-2 text-left">Status</th>
               <th className="px-4 py-2 text-left">Actions</th>
-              <th className="px-4 py-2"></th> {/* Expand icon column */}
+              <th className="px-4 py-2"></th>
             </tr>
           </thead>
+
           <tbody>
             {filteredData.map((item) => (
               <React.Fragment key={item.id}>
@@ -138,13 +141,15 @@ export default function InventoryTable() {
                       {item.status}
                     </span>
                   </td>
+
                   <td className="px-2 py-2">
                     <RowActions
-                      onEdit={() => alert(`Edit ${item.itemName}`)}
+                      onEdit={() => onEdit(item)}
                       onShare={() => alert(`Share ${item.itemName}`)}
                       onPrint={() => alert(`Print ${item.itemName}`)}
                     />
                   </td>
+
                   <td className="px-2 py-2 text-right">
                     <ExpandRow
                       isOpen={expandedRow === item.id}
@@ -152,6 +157,7 @@ export default function InventoryTable() {
                     />
                   </td>
                 </tr>
+
                 {expandedRow === item.id && (
                   <tr className="bg-gray-50">
                     <td colSpan={8} className="px-4 py-4 text-gray-700">
@@ -162,6 +168,7 @@ export default function InventoryTable() {
               </React.Fragment>
             ))}
           </tbody>
+
         </table>
       </div>
     </>
