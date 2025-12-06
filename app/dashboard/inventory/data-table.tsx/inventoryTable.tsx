@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { RefreshCcwIcon } from 'lucide-react'
+import { deleteManyInventory, getInventory } from './inventory'
 
 interface InventoryTableProps {
   data: InventoryItem[];
@@ -34,18 +35,21 @@ export default function InventoryTable({ data, setData, onEdit }: InventoryTable
 
   const isSelected = (id: string) => selected.has(id)
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = async () => {
     if (selected.size === 0) return
     const confirmed = confirm(`Delete ${selected.size} selected item(s)?`)
     if (confirmed) {
       setData(prev => prev.filter(item => !selected.has(item.id)))
       setSelected(new Set())
+      await deleteManyInventory(Array.from(selected));
+      setData(await getInventory());
     }
   }
 
   const filteredData = data.filter(item =>
     item.itemName.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
 
   const handleRefresh = () => {
     setSearchQuery('')
