@@ -1,15 +1,64 @@
 "use client";
 
-import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { FileVolume, PlusIcon } from 'lucide-react';
-import InventoryTable from './data-table.tsx/inventoryTable';
-import { Input } from '@/components/ui/input';
-import { InventoryItem } from '@/hooks/types';
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { FileVolume, Loader2, PlusIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { InventoryItem } from "@/hooks/types";
+import { toast } from "sonner";
+import InventoryTable from "./data-table.tsx/inventoryTable";
+import { addInventory, getInventory } from "./data-table.tsx/inventory";
 
 const Inventorypage = () => {
-  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false)
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<InventoryItem[]>([]);
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      const items = await getInventory();
+      setData(items);
+    }
+    load();
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+
+    const newItem: InventoryItem = {
+      id: editingItem ? editingItem.id : Date.now().toString(),
+      itemName: formData.get("itemName") as string,
+      modelNum: formData.get("modelNum") as string,
+      operator: formData.get("operator") as string,
+      date: formData.get("date") as string,
+      quantity: Number(formData.get("quantity")),
+      status: formData.get("status") as string,
+      details: (formData.get("details") as string) || "",
+    };
+
+    if (editingItem) {
+      // UPDATE
+      setData(prev =>
+        prev.map(item => (item.id === editingItem.id ? newItem : item))
+      );
+      toast.success("Item updated!");
+    } else {
+      // ADD NEW
+      setData(prev => [newItem, ...prev]);
+      toast.success("Item added!");
+    }
+
+    setEditingItem(null);
+    setIsSidePanelOpen(false);
+    setLoading(false);
+    form.reset();
+  };
 
   return (
     <div className="container mx-auto py-5">
@@ -26,17 +75,27 @@ const Inventorypage = () => {
             <FileVolume />
             Export
           </Button>
-          <Button className='cursor-pointer' onClick={() => setIsSidePanelOpen(true)}>
+
+          <Button className="cursor-pointer" onClick={() => setIsSidePanelOpen(true)}>
             <PlusIcon />
             Add Inventory
           </Button>
         </div>
       </div>
+
       <Separator className="mt-4" />
 
-      <InventoryTable />
+      {/* Pass Data to table */}
+      <InventoryTable
+        data={data}
+        setData={setData}
+        onEdit={(item) => {
+          setEditingItem(item);
+          setIsSidePanelOpen(true);
+        }}
+      />
 
-      {/* ✅ Side Panel */}
+      {/* Side Panel */}
       {isSidePanelOpen && (
         <div className="fixed inset-0 z-50 flex">
           {/* Overlay */}
@@ -48,37 +107,25 @@ const Inventorypage = () => {
           {/* Panel */}
           <div className="relative ml-auto w-full max-w-md bg-white dark:bg-gray-900 shadow-xl p-6 overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">Add New Inventory Item</h2>
-            
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                const form = e.target as HTMLFormElement
-                const formData = new FormData(form)
-                const newItem: InventoryItem = {
-                  id: Date.now().toString(),
-                  itemName: formData.get('itemName') as string,
-                  modelNum: formData.get('modelNum') as string,
-                  operator: formData.get('operator') as string,
-                  date: formData.get('date') as string,
-                  quantity: Number(formData.get('quantity')),
-                  status: formData.get('status') as string,
-                  details: formData.get('details') as string || ''
-                }
-                setData(prev => [newItem, ...prev])
-                setIsSidePanelOpen(false)
-              }}
+
+            <form onSubmit={handleSubmit}
               className="space-y-4">
               <Input name="itemName" placeholder="Item Name" required />
               <Input name="modelNum" placeholder="Model Number" required />
               <Input name="operator" placeholder="Operator" required />
               <Input name="date" type="date" required />
               <Input name="quantity" type="number" placeholder="Quantity" required />
-              <select name="status" required className="w-full border rounded px-3 py-2">
+
+              <select
+                name="status"
+                required
+                className="w-full border rounded px-3 py-2">
                 <option value="">Select Status</option>
                 <option value="Active">Active</option>
-                <option value="pending">Pending</option>
+                <option value="Pending">Pending</option>
                 <option value="In-active">In-active</option>
               </select>
+
               <textarea
                 name="details"
                 placeholder="Additional details (optional)"
@@ -86,10 +133,14 @@ const Inventorypage = () => {
               />
 
               <div className="flex justify-between mt-4">
-                <Button type="submit" className="bg-green-600 text-white hover:bg-green-700">
-                  Add Item
+                <Button type="submit" disabled={loading}>
+                  {loading ? <Loader2 className="animate-spin" /> : "Save Inventory"}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setIsSidePanelOpen(false)}>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsSidePanelOpen(false)}>
                   Cancel
                 </Button>
               </div>
