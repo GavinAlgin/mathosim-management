@@ -128,7 +128,7 @@ const data = {
     },
     {
       title: "Feedback",
-      url: "#",
+      url: "/dashboard/feedback",
       icon: Send,
     },
   ],

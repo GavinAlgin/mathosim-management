@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
+import { Loader2 } from 'lucide-react'
 
 type Invoice = {
   id: string
@@ -72,7 +73,7 @@ export default function DashboardPage() {
   if (!user || loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <span className="text-gray-500">Loading dashboard...</span>
+        <span className="text-gray-500"><Loader2 className="h-8 w-8 animate-spin text-gray-600" /></span>
       </div>
     )
   }

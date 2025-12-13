@@ -90,7 +90,7 @@ export function DataTable({ data }: DataTableProps) {
         placeholder="Search employees..."
         value={globalFilter}
         onChange={(e) => setGlobalFilter(e.target.value)}
-        className="max-w-sm"
+        className="w-[150px] mt-8"
       />
 
       <div className="overflow-hidden rounded-md border">
