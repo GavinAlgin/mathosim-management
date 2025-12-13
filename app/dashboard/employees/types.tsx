@@ -6,6 +6,7 @@ export type Employee = {
   arrangement: "full-time" | "part-time" | "contract" | "internship";
   status: "pending" | "processing" | "success" | "failed";
   startDate: string;
+  items: null;
 };
 
 

@@ -22,7 +22,7 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-ki
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { columns } from "./columns"
 import { Employee } from "./types"
 
@@ -43,7 +43,11 @@ type DataTableProps = {
 export function DataTable({ data }: DataTableProps) {
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
-  const [tableData, setTableData] = useState<Employee[]>(data);
+  const [tableData, setTableData] = useState<Employee[]>();
+
+  useEffect(() => {
+    setTableData(data);
+  }, [data]);
 
   const table = useReactTable({
     data: tableData,
@@ -60,14 +64,25 @@ export function DataTable({ data }: DataTableProps) {
     getPaginationRowModel: getPaginationRowModel(),
   })
 
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event
-    if (active.id !== over?.id) {
-      const oldIndex = data.findIndex((item) => item.id === active.id)
-      const newIndex = data.findIndex((item) => item.id === over?.id)
-      setTableData((items) => arrayMove(items, oldIndex, newIndex))
-    }
-  }
+  // const handleDragEnd = (event: any) => {
+  //   const { active, over } = event
+  //   if (active.id !== over?.id) {
+  //     const oldIndex = data.findIndex((item) => item.id === active.id)
+  //     const newIndex = data.findIndex((item) => item.id === over?.id)
+  //     setTableData((items) => arrayMove(items, oldIndex, newIndex))
+  //   }
+  // }
+    const handleDragEnd = (event: any) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      setTableData((items) => {
+        const oldIndex = items.findIndex(i => i.id === active.id);
+        const newIndex = items.findIndex(i => i.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    };
+
 
   return (
     <div className="space-y-4">
