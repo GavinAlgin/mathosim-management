@@ -43,7 +43,7 @@ type DataTableProps = {
 export function DataTable({ data }: DataTableProps) {
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
-  const [tableData, setTableData] = useState<Employee[]>();
+  const [tableData, setTableData] = useState<Employee[]>([]);
 
   useEffect(() => {
     setTableData(data);
@@ -72,17 +72,17 @@ export function DataTable({ data }: DataTableProps) {
   //     setTableData((items) => arrayMove(items, oldIndex, newIndex))
   //   }
   // }
-    const handleDragEnd = (event: any) => {
-      const { active, over } = event;
-      if (!over || active.id === over.id) return;
-
-      setTableData((items) => {
-        const oldIndex = items.findIndex(i => i.id === active.id);
-        const newIndex = items.findIndex(i => i.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    };
-
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+  
+    setTableData((items) => {
+      const oldIndex = items.findIndex(i => i.id === active.id);
+      const newIndex = items.findIndex(i => i.id === over.id);
+      return arrayMove(items, oldIndex, newIndex);
+    });
+  };
+  
 
   return (
     <div className="space-y-4">

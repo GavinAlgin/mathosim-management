@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabaseClient";
 
 import { Button } from "@/components/ui/button";
 import { IconPlus } from "@tabler/icons-react";
-import { Toaster } from "@/components/ui/sonner";
 import { Loader2 } from "lucide-react";
 import { EmployeeForm } from "./employee-form";
 import { SideDrawer } from "./components/SideDrawer";
@@ -54,8 +53,9 @@ export default function EmployeesPage() {
           number: e.cell_number,
           position: e.position,
           arrangement: e.arrangement,
-          status: "active",
+          status: "success",
           startDate: e.date_started,
+          items: [],
         }))
       );
     }
@@ -90,7 +90,7 @@ export default function EmployeesPage() {
       </div>
 
       {/* Your DataTable stays here */}
-      <DataTable data={columns={columns} loading={loading}} />
+      <DataTable data={employees} />
 
       <SideDrawer
         open={open}
