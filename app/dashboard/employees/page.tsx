@@ -10,6 +10,7 @@ import { columns } from "./columns";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/lib/supabaseClient";
 import { Loader2 } from "lucide-react";
+import { Employee } from "./types";
 
 export default function Employees() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);

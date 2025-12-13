@@ -24,7 +24,7 @@ import { CSS } from "@dnd-kit/utilities"
 
 import { useState } from "react"
 import { columns } from "./columns"
-import { Employee } from "./mock-data"
+import { Employee } from "./types"
 
 const DraggableRow = ({ row, children }: any) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: row.id })

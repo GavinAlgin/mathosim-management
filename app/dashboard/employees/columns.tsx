@@ -1,6 +1,6 @@
 // components/columns.ts
 import { ColumnDef } from "@tanstack/react-table"
-import { Employee } from "./mock-data"
+import { Employee } from "./types"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { DotsHorizontalIcon } from "@radix-ui/react-icons"
