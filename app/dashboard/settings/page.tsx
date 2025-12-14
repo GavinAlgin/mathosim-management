@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Tabs,
   TabsList,
@@ -11,9 +11,38 @@ import { Separator } from "@/components/ui/separator";
 import UpdateAccountForm from "./components/UpdateAccountForm";
 import SecuritySettings from "./components/SecuritySettings";
 import NotificationSettings from "./components/NotificationsSettings";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
+import { Loader2 } from "lucide-react";
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<"account" | "security" | "notifications">("account");
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const router = useRouter();
+
+  /** Check logged in user sessions */
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error || !data.session) {
+        router.replace("/");
+        return;
+      }
+
+      setCheckingAuth(false);
+    };
+
+    checkSession();
+  }, [router]);
+
+  if (checkingAuth) {
+    return (     
+    <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+      <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+    </div>
+    )
+  }
 
   return (
     <div className="w-full mx-auto py-8 space-y-6">

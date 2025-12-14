@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 import { Button } from "@/components/ui/button";
-import { IconPlus } from "@tabler/icons-react";
+import  { IconPlus } from "@tabler/icons-react";
 import { Loader2 } from "lucide-react";
 import { EmployeeForm } from "./employee-form";
 import { SideDrawer } from "./components/SideDrawer";
@@ -71,9 +71,11 @@ export default function EmployeesPage() {
 
   /** ⏳ Block render until auth check completes */
   if (checkingAuth) {
-    return     <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+    return (    
+    <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
       <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
     </div>
+    )
   }
 
   return (
