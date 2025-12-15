@@ -20,7 +20,7 @@ import { toast } from "sonner"
 import { supabase } from "@/lib/supabaseClient"
 
 const MAX_SIZE = 50 * 1024 * 1024 // 50MB
-const BUCKET_NAME = "uploads"
+const BUCKET_NAME = "stakeholders"
 
 const ALLOWED_TYPES = [
   "application/pdf",

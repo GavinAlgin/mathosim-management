@@ -24,10 +24,10 @@ const documentspage = () => {
       </div>
       <Separator className='mb-6 mt-3.5'/>
 
-        <h2 className='text-lg font-semibold'>Recently Modified</h2>
+        {/* <h2 className='text-lg font-semibold'>Recently Modified</h2>
         <div className='p-6'>
             <RecentlyModified />
-        </div>
+        </div> */}
         <h2 className='text-lg font-semibold'>All files</h2>
         <FilesPage />
     </div>

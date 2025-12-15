@@ -4,8 +4,8 @@ import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { IconFileExport } from "@tabler/icons-react"
-import { FileTable } from "./components/RowsActions"
-import { UploadModal } from "./components/UploadModal"
+import FileTable from "./data-table"
+import { UploadModal } from "./components/upload-modal"
 
 interface FileRecord {
   id: string
@@ -16,7 +16,7 @@ interface FileRecord {
 }
 
 const ContractPage = () => {
-  const [files, setFiles] = useState<FileRecord[]>([])
+  const [files, setFiles] = useState<FileRecord[]>([]);
 
   const handleUpload = (file: File) => {
     const newRecord: FileRecord = {
@@ -37,7 +37,7 @@ const ContractPage = () => {
           <Button variant="outline">
             <IconFileExport className="mr-2 h-4 w-4" /> Download All
           </Button>
-          <UploadModal onUpload={handleUpload} />
+          <UploadModal />
         </div>
       </div>
       <Separator className="mt-4" />

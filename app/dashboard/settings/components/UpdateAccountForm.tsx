@@ -64,6 +64,7 @@ export default function UpdateAccountForm() {
         <Input
           type="email"
           value={email}
+          placeholder={email}
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
