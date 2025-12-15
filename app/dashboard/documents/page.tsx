@@ -1,6 +1,5 @@
 "use client";
 
-import RecentlyModified from '@/components/recently-modified'
 import React, { useEffect, useState } from 'react'
 import FilesPage from './data-table'
 import { Separator } from '@/components/ui/separator'
@@ -10,8 +9,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { Loader2 } from 'lucide-react';
 
-const documentspage = () => {
-  const [loading, setLoading] = useState(true);
+const Documentspage = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
 
@@ -55,14 +53,10 @@ const documentspage = () => {
       </div>
       <Separator className='mb-6 mt-3.5'/>
 
-        {/* <h2 className='text-lg font-semibold'>Recently Modified</h2>
-        <div className='p-6'>
-            <RecentlyModified />
-        </div> */}
         <h2 className='text-lg font-semibold'>All files</h2>
         <FilesPage />
     </div>
   )
 }
 
-export default documentspage
+export default Documentspage

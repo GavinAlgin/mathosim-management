@@ -10,7 +10,6 @@ import { Loader2 } from "lucide-react";
 import { EmployeeForm } from "./employee-form";
 import { SideDrawer } from "./components/SideDrawer";
 import { DataTable } from "./data-table";
-import { columns } from "./columns";
 import { Employee } from "./types";
 
 export default function EmployeesPage() {

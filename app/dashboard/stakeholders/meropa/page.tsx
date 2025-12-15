@@ -18,7 +18,7 @@ interface FileRecord {
   uploadedBy: string
 }
 
-const contractPage = () => {
+const ContractPage = () => {
   const [files, setFiles] = useState<FileRecord[]>([]);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
@@ -73,4 +73,4 @@ const contractPage = () => {
   )
 }
 
-export default contractPage
+export default ContractPage

@@ -56,7 +56,7 @@ export function EmployeeForm({ onSuccess }: EmployeeFormProps) {
 
     try {
       /** Upload documents (optional) */
-      let docs_paths: string[] = [];
+      const docs_paths: string[] = [];
 
       if (form.docs?.length) {
         for (const file of Array.from(form.docs)) {
