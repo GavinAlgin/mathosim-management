@@ -1,11 +1,14 @@
 // app/contract/page.tsx or pages/contract.tsx
 "use client"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { IconFileExport } from "@tabler/icons-react"
 import FileTable from "./data-table"
 import { UploadModal } from "./components/upload-modal"
+import { supabase } from "@/lib/supabaseClient"
+import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 interface FileRecord {
   id: string
@@ -17,6 +20,33 @@ interface FileRecord {
 
 const ContractPage = () => {
   const [files, setFiles] = useState<FileRecord[]>([]);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const router = useRouter();
+    
+  /** Check logged in user sessions */
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error || !data.session) {
+        router.replace("/");
+        return;
+      }
+
+      setCheckingAuth(false);
+    };
+
+    checkSession();
+  }, [router]);
+
+  /** ⏳ Block render until auth check completes */
+  if (checkingAuth) {
+    return (    
+    <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+      <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+    </div>
+    )
+  }
 
   const handleUpload = (file: File) => {
     const newRecord: FileRecord = {

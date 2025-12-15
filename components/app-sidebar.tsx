@@ -6,6 +6,7 @@ import {
   Home,
   Inbox,
   LifeBuoy,
+  Loader2,
   Send,
   Settings2,
   SquareTerminal,
@@ -27,6 +28,9 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { NavPrimary } from "./nav-primary"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { supabase } from "@/lib/supabaseClient"
 
 const data = {
   user: {
@@ -135,6 +139,34 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const router = useRouter()
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+
+    /** Check logged in user sessions */
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error || !data.session) {
+        router.replace("/");
+        return;
+      }
+
+      setCheckingAuth(false);
+    };
+
+    checkSession();
+  }, [router]);
+
+  /** ⏳ Block render until auth check completes */
+  if (checkingAuth) {
+    return (    
+    <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+      <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+    </div>
+    )
+  }
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>

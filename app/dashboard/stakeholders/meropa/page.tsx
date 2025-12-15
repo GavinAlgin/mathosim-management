@@ -1,11 +1,14 @@
-"use client"
+'use client';
 
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { IconFileExport, IconPlus } from '@tabler/icons-react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { UploadModal } from '../ul/components/upload-modal'
 import FileTable from '../ul/data-table'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
+import { Loader2 } from 'lucide-react'
 
 interface FileRecord {
   id: string
@@ -17,6 +20,33 @@ interface FileRecord {
 
 const contractPage = () => {
   const [files, setFiles] = useState<FileRecord[]>([]);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const router = useRouter();
+
+  /** Check logged in user sessions */
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error || !data.session) {
+        router.replace("/");
+        return;
+      }
+
+      setCheckingAuth(false);
+    };
+
+    checkSession();
+  }, [router]);
+
+  /** ⏳ Block render until auth check completes */
+  if (checkingAuth) {
+    return (    
+    <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+      <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+    </div>
+    )
+  }
   
   return (
     <div className="container mx-auto py-5">
