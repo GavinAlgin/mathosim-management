@@ -5,6 +5,7 @@ import {
   Bell,
   ChevronsUpDown,
   CreditCard,
+  Loader2,
   LogOut,
   Sparkles,
 } from "lucide-react"
@@ -39,7 +40,7 @@ export function NavUser() {
   const supabase = useSupabaseClient()
   const router = useRouter()
 
-  if (!user) return <div>Loading...</div>
+  if (!user) return <div><Loader2 className="h-4 w-4 animate-spin text-gray-600 text-center" /></div>
 
   const username = user.user_metadata?.username ?? user.email
   const avatar = user.user_metadata?.avatar_url ?? ''

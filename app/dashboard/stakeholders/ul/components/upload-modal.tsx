@@ -2,11 +2,6 @@
 
 "use client"
 import * as React from "react"
-import Image from "next/image"
-import { toast } from "sonner"
-import { Loader2, UploadCloud } from "lucide-react"
-import { IconAlertCircle, IconFileImport } from "@tabler/icons-react"
-
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -25,7 +20,7 @@ import { toast } from "sonner"
 import { supabase } from "@/lib/supabaseClient"
 
 const MAX_SIZE = 50 * 1024 * 1024 // 50MB
-const BUCKET_NAME = "uploads"
+const BUCKET_NAME = "stakeholders"
 
 const ALLOWED_TYPES = [
   "application/pdf",

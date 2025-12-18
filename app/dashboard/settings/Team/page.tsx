@@ -2,34 +2,43 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import {
-  Button,
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  Input,
-  Label,
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogFooter
-} from '@/components/ui'
-import { Loader2, Trash, UserPlus, Shield } from 'lucide-react'
+// import {
+//   Button,
+//   Dialog,
+//   DialogTrigger,
+//   DialogContent,
+//   DialogHeader,
+//   DialogTitle,
+//   Input,
+//   Label,
+//   Select,
+//   SelectTrigger,
+//   SelectContent,
+//   SelectItem,
+//   Table,
+//   TableHeader,
+//   TableRow,
+//   TableHead,
+//   TableBody,
+//   TableCell,
+//   AlertDialog,
+//   AlertDialogTrigger,
+//   AlertDialogContent,
+//   AlertDialogHeader,
+//   AlertDialogTitle,
+//   AlertDialogFooter
+// } from '@/components/ui'
+import { Loader2, Trash, UserPlus, Shield, Table } from 'lucide-react'
 import { toast } from 'sonner'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { AlertDialogHeader, AlertDialogFooter } from '@/components/ui/alert-dialog'
+import { Input } from '@/components/ui/input'
+import { TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table'
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogTitle } from '@radix-ui/react-alert-dialog'
+import { Label } from '@radix-ui/react-dropdown-menu'
+import { SelectTrigger, SelectContent, SelectItem } from '@radix-ui/react-select'
+import { Select } from 'react-day-picker'
+import { Button } from '@/components/ui/button'
 
 type Member = {
   id: string

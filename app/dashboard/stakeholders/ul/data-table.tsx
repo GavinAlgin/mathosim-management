@@ -5,6 +5,7 @@ import {
   ColumnDef,
   useReactTable,
   getCoreRowModel,
+  flexRender,
 } from "@tanstack/react-table"
 
 import {
@@ -57,35 +58,46 @@ export default function FileTable({ data }: FileTableProps) {
   const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() })
 
   return (
-    <Table>
-      <TableHeader>
-        {table.getHeaderGroups().map(headerGroup => (
-          <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map(header => (
-              <TableHead key={header.id}>
-                {header.isPlaceholder ? null : header.renderHeader()}
-              </TableHead>
-            ))}
-          </TableRow>
-        ))}
-      </TableHeader>
-      <TableBody>
-        {table.getRowModel().rows.length ? (
-          table.getRowModel().rows.map(row => (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map(cell => (
-                <TableCell key={cell.id}>{cell.renderCell()}</TableCell>
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map(headerGroup => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map(header => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
               ))}
             </TableRow>
-          ))
-        ) : (
-          <TableRow>
-            <TableCell colSpan={columns.length} className="text-center">
-              No files uploaded
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+          ))}
+        </TableHeader>
+
+        <TableBody>
+          {table.getRowModel().rows.length ? (
+            table.getRowModel().rows.map(row => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map(cell => (
+                  <TableCell key={cell.id}>
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
+                    )}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="text-center">
+                No files uploaded
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
   )
 }

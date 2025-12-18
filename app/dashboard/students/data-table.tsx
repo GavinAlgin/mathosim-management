@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   flexRender,
@@ -9,39 +9,70 @@ import {
   getSortedRowModel,
   SortingState,
   ColumnDef,
-} from "@tanstack/react-table"
+  Row,
+} from "@tanstack/react-table";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 
-import { DndContext, closestCenter } from "@dnd-kit/core"
-import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable"
-import { useSortable } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
+import {
+  DndContext,
+  closestCenter,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-import { useState } from "react"
-import { Student } from "./page"
+import { useState } from "react";
+import { Student } from "./mock-data";
 
 interface DataTableProps {
-  columns: ColumnDef<Student>[]
-  data: Student[]
+  columns: ColumnDef<Student>[];
+  data: Student[];
 }
 
-const DraggableRow = ({ row, children }: any) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: row.id })
-  const style = { transform: CSS.Transform.toString(transform), transition }
+/* ---------------- Draggable Row ---------------- */
+
+interface DraggableRowProps {
+  row: Row<Student>;
+  children: React.ReactNode;
+}
+
+function DraggableRow({ row, children }: DraggableRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: row.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
     <TableRow ref={setNodeRef} style={style} {...attributes} {...listeners}>
       {children}
     </TableRow>
-  )
+  );
 }
 
+/* ---------------- Data Table ---------------- */
+
 export function DataTable({ columns, data }: DataTableProps) {
-  const [globalFilter, setGlobalFilter] = useState("")
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [globalFilter, setGlobalFilter] = useState<string>("");
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     data,
@@ -56,16 +87,26 @@ export function DataTable({ columns, data }: DataTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-  })
+  });
 
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event
-    if (active.id !== over?.id) {
-      const oldIndex = data.findIndex((item) => item.id === active.id)
-      const newIndex = data.findIndex((item) => item.id === over?.id)
-      arrayMove(data, oldIndex, newIndex) // Does not update state here since data is passed via props
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = data.findIndex(
+      (item) => String(item.id) === String(active.id)
+    );
+    const newIndex = data.findIndex(
+      (item) => String(item.id) === String(over.id)
+    );
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      arrayMove(data, oldIndex, newIndex);
+      // Note: data comes from props, so reordering must be
+      // handled by the parent if persistence is required
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
@@ -83,29 +124,44 @@ export function DataTable({ columns, data }: DataTableProps) {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
 
-          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={table.getRowModel().rows.map((row) => row.id)} strategy={verticalListSortingStrategy}>
+          <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={table.getRowModel().rows.map((row) => row.id)}
+              strategy={verticalListSortingStrategy}
+            >
               <TableBody>
                 {table.getRowModel().rows.length ? (
                   table.getRowModel().rows.map((row) => (
                     <DraggableRow key={row.id} row={row}>
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
                         </TableCell>
                       ))}
                     </DraggableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={columns.length} className="text-center h-24">
+                    <TableCell
+                      colSpan={columns.length}
+                      className="text-center h-24"
+                    >
                       No results.
                     </TableCell>
                   </TableRow>
@@ -126,9 +182,12 @@ export function DataTable({ columns, data }: DataTableProps) {
           <ArrowLeftIcon className="mr-2" />
           Previous
         </Button>
+
         <span className="text-sm">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          {table.getPageCount()}
         </span>
+
         <Button
           variant="outline"
           size="sm"
@@ -140,5 +199,5 @@ export function DataTable({ columns, data }: DataTableProps) {
         </Button>
       </div>
     </div>
-  )
+  );
 }

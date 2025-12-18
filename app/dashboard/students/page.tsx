@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { FileVolume } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { DataTable } from './data-table'
-import { columns } from './columns'
+// import { DataTable } from './data-table'
+// import { columns } from './columns'
 import { studentDataFPM, studentDataSETA, Student } from './mock-data'
 import StudentPanel from './StudentPanel' // ✅ import your panel here
 
@@ -107,11 +107,11 @@ const StudentsPage = () => {
         </TabsList>
 
         <TabsContent value="fpm">
-          <DataTable columns={columns} data={filteredData} data={dataWithActions} key={refreshKey} />
+          {/* <DataTable columns={columns} data={filteredData} data={dataWithActions} key={refreshKey} /> */}
         </TabsContent>
 
         <TabsContent value="seta">
-          <DataTable columns={columns} data={filteredData} data={dataWithActions} key={refreshKey} />
+          {/* <DataTable columns={columns} data={filteredData} mockData={dataWithActions} key={refreshKey} /> */}
         </TabsContent>
       </Tabs>
 
