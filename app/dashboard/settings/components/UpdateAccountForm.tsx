@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@supabase/auth-helpers-react";
+import type { UserAttributes } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,18 +11,18 @@ import { supabase } from "@/lib/supabaseClient";
 export default function UpdateAccountForm() {
   const user = useUser();
 
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState(""); 
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [status, setStatus] = useState<string>("");
 
-  // Populate fields
+  // Populate fields from user
   useEffect(() => {
-    if (user) {
-      setEmail(user.email ?? "");
-      setName(user.user_metadata?.username ?? "");
-    }
+    if (!user) return;
+
+    setEmail(user.email ?? "");
+    setName((user.user_metadata?.username as string) ?? "");
   }, [user]);
 
   const updateProfile = async () => {
@@ -30,48 +31,59 @@ export default function UpdateAccountForm() {
     setLoading(true);
     setStatus("");
 
-    // 1️⃣ Update auth email / password
-    const authUpdates: any = { email };
+    try {
+      /** 1️⃣ Update auth email / password */
+      const authUpdates: UserAttributes = {};
 
-    if (password.length > 0) {
-      authUpdates.password = password;
-    }
+      if (email && email !== user.email) {
+        authUpdates.email = email;
+      }
 
-    const { error: authError } =
-      await supabase.auth.updateUser(authUpdates);
+      if (password.trim().length > 0) {
+        authUpdates.password = password;
+      }
 
-    // 2️⃣ Update username in public table
-    const { error: nameError } = await supabase
-      .from("users")
-      .update({ username: name })
-      .eq("id", user.id);
+      if (Object.keys(authUpdates).length > 0) {
+        const { error } = await supabase.auth.updateUser(authUpdates);
+        if (error) throw error;
+      }
 
-    setLoading(false);
+      /** 2️⃣ Update username in public users table */
+      if (name.trim().length > 0) {
+        const { error } = await supabase
+          .from("users")
+          .update({ username: name })
+          .eq("id", user.id);
 
-    if (authError || nameError) {
-      console.error(authError, nameError);
-      setStatus("❌ Failed to update profile");
-    } else {
+        if (error) throw error;
+      }
+
       setStatus("✅ Profile updated successfully");
-      setPassword(""); // clear password field
+      setPassword("");
+    } catch (error) {
+      console.error(error);
+      setStatus("❌ Failed to update profile");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="space-y-4 max-w-md">
       <div>
-        <Label>Email</Label>
+        <Label htmlFor="email">Email</Label>
         <Input
+          id="email"
           type="email"
           value={email}
-          placeholder={email}
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
 
       <div>
-        <Label>Username</Label>
+        <Label htmlFor="username">Username</Label>
         <Input
+          id="username"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -79,8 +91,9 @@ export default function UpdateAccountForm() {
       </div>
 
       <div>
-        <Label>New Password</Label>
+        <Label htmlFor="password">New Password</Label>
         <Input
+          id="password"
           type="password"
           placeholder="Leave empty to keep current password"
           value={password}
@@ -96,6 +109,7 @@ export default function UpdateAccountForm() {
     </div>
   );
 }
+
 
 
 // "use client";
