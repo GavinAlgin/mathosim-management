@@ -10,6 +10,7 @@ import InventoryFormDrawer from "./components/SideDrawer";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { InventoryDataTable } from "./data-table.tsx/inventoryTable";
+import { toast } from "sonner";
 
 const Inventorypage = () => {
   const router = useRouter();
@@ -17,6 +18,8 @@ const Inventorypage = () => {
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [data, setData] = useState<InventoryItem[]>([]);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
   /** Check logged in user sessions */
   useEffect(() => {
@@ -34,12 +37,35 @@ const Inventorypage = () => {
     checkSession();
   }, [router]);
 
+  // useEffect(() => {
+  //   async function load() {
+  //     const items = await getInventory();
+  //     setData(items);
+  //   }
+  //   load();
+  // }, []);
+    // 🔹 INITIAL FETCH
   useEffect(() => {
-    async function load() {
-      const items = await getInventory();
-      setData(items);
-    }
-    load();
+    const fetchInventory = async () => {
+      setLoading(true);
+
+      const { data, error } = await supabase
+        .from("inventory")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        toast.error("Failed to load inventory");
+      } else {
+        setInventory(
+          data.map(mapDbToItem)
+        );
+      }
+
+      setLoading(false);
+    };
+
+    fetchInventory();
   }, []);
 
   const handleSave = (item: InventoryItem) => {
@@ -85,7 +111,7 @@ const Inventorypage = () => {
 
       <Separator className="mt-4 border" />
 
-      <InventoryDataTable data={data}/>
+      <InventoryDataTable data={data} />
 
       <InventoryFormDrawer
         isOpen={isSidePanelOpen}

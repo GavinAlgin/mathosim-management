@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { InventoryItem } from "@/hooks/types";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabaseClient";
 
 interface InventoryFormDrawerProps {
   isOpen: boolean;
@@ -29,29 +30,77 @@ const InventoryFormDrawer: React.FC<InventoryFormDrawerProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+
+  //   const form = e.target as HTMLFormElement;
+  //   const formData = new FormData(form);
+
+  //   const newItem: InventoryItem = {
+  //     id: editingItem ? editingItem.id : Date.now().toString(),
+  //     itemName: formData.get("itemName") as string,
+  //     modelNum: formData.get("modelNum") as string,
+  //     operator: formData.get("operator") as string,
+  //     date: formData.get("date") as string,
+  //     quantity: Number(formData.get("quantity")),
+  //     status: formData.get("status") as string,
+  //     details: (formData.get("details") as string) || "",
+  //   };
+
+  //   onSave(newItem);
+  //   toast.success(editingItem ? "Item updated!" : "Item added!");
+  //   setLoading(false);
+  //   form.reset();
+  //   onClose();
+  // };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
 
-    const newItem: InventoryItem = {
-      id: editingItem ? editingItem.id : Date.now().toString(),
-      itemName: formData.get("itemName") as string,
-      modelNum: formData.get("modelNum") as string,
-      operator: formData.get("operator") as string,
-      date: formData.get("date") as string,
+    const payload = {
+      item_name: formData.get("itemName"),
+      model_num: formData.get("modelNum"),
+      operator: formData.get("operator"),
+      date: formData.get("date"),
       quantity: Number(formData.get("quantity")),
-      status: formData.get("status") as string,
-      details: (formData.get("details") as string) || "",
+      status: formData.get("status"),
+      details: formData.get("details") || "",
     };
 
-    onSave(newItem);
-    toast.success(editingItem ? "Item updated!" : "Item added!");
-    setLoading(false);
-    form.reset();
-    onClose();
+    try {
+      if (editingItem) {
+        // 🔄 UPDATE
+        const { error } = await supabase
+          .from("inventory")
+          .update(payload)
+          .eq("id", editingItem.id);
+
+        if (error) throw error;
+
+        toast.success("Item updated!");
+      } else {
+        // ➕ INSERT
+        const { error } = await supabase
+          .from("inventory")
+          .insert(payload);
+
+        if (error) throw error;
+
+        toast.success("Item added!");
+      }
+
+      form.reset();
+      onClose();
+    } catch (error: any) {
+      toast.error(error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
