@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Lato } from "next/font/google";
+import { Lato } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner"
 import { SupabaseProvider } from "@/lib/supabase/SupabaseProvider";
