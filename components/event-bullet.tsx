@@ -1,38 +1,30 @@
 "use client";
 
 import { motion, Transition, AnimatePresence } from "framer-motion";
-import { useMemo, useCallback } from "react";
-import { addDays, format, getYear, isSameDay, isSameMonth, isSunday, startOfDay, startOfWeek } from "date-fns";
+import { useMemo } from "react";
+import { format, isSameDay } from "date-fns";
 import { cva } from "class-variance-authority";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 import { useCalendar } from "@/components/calendar-context";
-import { AddEditEventDialog } from "@/components/add-edit-event-dialog";
 import { DroppableArea } from "@/components/droppable-area";
 import { EventListDialog } from "@/components/events-list-dialog";
-import { MonthEventBadge } from "@/components/month-event-badge";
-import { WeekViewMultiDayEventsRow } from "@/components/week-view-multi-day-events-row";
-import { CalendarTimeline } from "@/components/calendar-time-line";
-import { RenderGroupedEvents } from "@/components/render-grouped-events";
 
 import {
-  calculateMonthEventPositions,
   getCalendarCells,
   getEventsCount,
-  groupEvents,
   navigateDate,
   rangeText,
+  calculateMonthEventPositions,
 } from "@/components/helpers";
 
 import type { IEvent, ICalendarCell } from "@/components/interfaces";
 import type { TCalendarView, TEventColor } from "@/components/types";
 
-//
 // ---------------------------
 // Framer Motion transitions
 // ---------------------------
@@ -47,24 +39,13 @@ export const staggerContainer = {
   animate: { transition: { staggerChildren: 0.05 } },
 };
 
-export const fadeIn = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-};
-
 export const slideFromLeft = {
   initial: { opacity: 0, x: -20 },
   animate: { opacity: 1, x: 0 },
 };
 
-export const slideFromRight = {
-  initial: { opacity: 0, x: 20 },
-  animate: { opacity: 1, x: 0 },
-};
-
-//
 // ---------------------------
-// EventBullet
+// EventBullet (FIXED)
 // ---------------------------
 const eventBulletVariants = cva("size-2 rounded-full", {
   variants: {
@@ -81,10 +62,21 @@ const eventBulletVariants = cva("size-2 rounded-full", {
   defaultVariants: { color: "blue" },
 });
 
-export function EventBullet({ color }: { color: TEventColor }) {
+/**
+ * Updated to accept className. 
+ * This allows parent components (like CalendarYearView) 
+ * to override the size or margins.
+ */
+interface EventBulletProps {
+  color: TEventColor;
+  className?: string;
+}
+
+export function EventBullet({ color, className }: EventBulletProps) {
   return (
     <motion.div
-      className={cn(eventBulletVariants({ color }))}
+      // We merge the variant styles with the incoming className
+      className={cn(eventBulletVariants({ color }), className)}
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       whileHover={{ scale: 1.2 }}
@@ -93,7 +85,6 @@ export function EventBullet({ color }: { color: TEventColor }) {
   );
 }
 
-//
 // ---------------------------
 // DateNavigator
 // ---------------------------
@@ -145,11 +136,10 @@ export function DateNavigator({ view, events }: { view: TCalendarView; events: I
   );
 }
 
-//
 // ---------------------------
 // DayCell
 // ---------------------------
-export function DayCell({ cell, events, eventPositions }: { cell: ICalendarCell; events: IEvent[]; eventPositions: Record<string, number> }) {
+export function DayCell({ cell, events }: { cell: ICalendarCell; events: IEvent[]; eventPositions: Record<string, number> }) {
   const { day, currentMonth, date } = cell;
   const cellEvents = useMemo(() => events.filter((e) => isSameDay(new Date(e.startDate), date)), [events, date]);
 
@@ -158,7 +148,7 @@ export function DayCell({ cell, events, eventPositions }: { cell: ICalendarCell;
       <DroppableArea date={date}>
         <span className={cn("text-xs font-semibold", !currentMonth && "opacity-50")}>{day}</span>
         <div className="flex gap-1 mt-1 flex-col">
-          {cellEvents.slice(0, 3).map((e, idx) => (
+          {cellEvents.slice(0, 3).map((e) => (
             <EventBullet key={e.id} color={e.color as TEventColor} />
           ))}
         </div>
@@ -167,7 +157,6 @@ export function DayCell({ cell, events, eventPositions }: { cell: ICalendarCell;
   );
 }
 
-//
 // ---------------------------
 // CalendarMonthView
 // ---------------------------
@@ -196,7 +185,6 @@ export function CalendarMonthView({ singleDayEvents, multiDayEvents }: { singleD
   );
 }
 
-//
 // ---------------------------
 // CalendarHeader
 // ---------------------------
