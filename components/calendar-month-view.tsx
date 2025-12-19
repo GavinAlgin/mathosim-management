@@ -1,9 +1,7 @@
-import { motion } from "framer-motion";
+"use client";
+
+import { motion, Variants, Transition } from "framer-motion";
 import { useMemo } from "react";
-import {
-	staggerContainer,
-	transition,
-} from "@/components/animations";
 import { useCalendar } from "@/components/calendar-context";
 
 import {
@@ -20,6 +18,23 @@ interface IProps {
 }
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/** Framer Motion Transition */
+const transition: Transition = {
+	type: "spring",
+	stiffness: 100,
+	damping: 20,
+};
+
+/** Stagger container for parent animations */
+const staggerContainer: Variants = {
+	initial: {},
+	animate: {
+		transition: {
+			staggerChildren: 0.05,
+		},
+	},
+};
 
 export function CalendarMonthView({ singleDayEvents, multiDayEvents }: IProps) {
 	const { selectedDate } = useCalendar();
@@ -47,7 +62,8 @@ export function CalendarMonthView({ singleDayEvents, multiDayEvents }: IProps) {
 						className="flex items-center justify-center py-2"
 						initial={{ opacity: 0, y: -10 }}
 						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: index * 0.05, ...transition }}>
+						transition={{ delay: index * 0.05, ...transition }}
+					>
 						<span className="text-xs font-medium text-t-quaternary">{day}</span>
 					</motion.div>
 				))}
