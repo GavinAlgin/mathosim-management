@@ -44,11 +44,11 @@ const data = {
       url: "/dashboard",
       icon: Home
     },
-    // {
-    //   title: "Students",
-    //   url: "/dashboard/students",
-    //   icon: User
-    // },
+    {
+      title: "Students",
+      url: "/dashboard/students",
+      icon: User
+    },
     {
       title: "Employees",
       url: "/dashboard/employees",

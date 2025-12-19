@@ -1,86 +1,83 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { FileVolume } from 'lucide-react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-// import { DataTable } from './data-table'
-// import { columns } from './columns'
-import { studentDataFPM, studentDataSETA, Student } from './mock-data'
-import StudentPanel from './StudentPanel' // ✅ import your panel here
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { FileVolume } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import StudentPanel from './StudentPanel';
+import { columns } from './columns';
+import { DataTable } from './data-table';
+import { supabase } from '@/lib/supabaseClient';
+import { Student } from './types';
 
-const StudentsPage = () => {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [tab, setTab] = useState('fpm')
-  const [isPanelOpen, setIsPanelOpen] = useState(false)
-  const [editStudent, setEditStudent] = useState<Student | null>(null);
+const StudentsPage: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [tab, setTab] = useState<'fpm' | 'seta'>('fpm');
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [deleteStudent, setDeleteStudent] = useState<Student | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0); // To trigger table refresh
+  const [refreshKey, setRefreshKey] = useState(0);
 
+  const [fpmStudents, setFpmStudents] = useState<Student[]>([]);
+  const [setaStudents, setSetaStudents] = useState<Student[]>([]);
 
-  const [fpmStudents, setFpmStudents] = useState<Student[]>(studentDataFPM)
-  const [setaStudents, setSetaStudents] = useState<Student[]>(studentDataSETA)
+  // Fetch students
+  const fetchStudents = async () => {
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .order('created_at', { ascending: true });
 
-  const currentData = tab === 'fpm' ? fpmStudents : setaStudents
-
-  const filteredData = currentData.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.number.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  const dataWithActions = filteredData.map((student) => ({
-    ...student,
-    onEdit: (s: Student) => {
-      setEditStudent(s);
-      setIsPanelOpen(true);
-    },
-    onDelete: (s: Student) => {
-      setDeleteStudent(s);
-    },
-  }));
-
-
-  const handleAddStudent = (newStudent: Omit<Student, "id">) => {
-    if (editStudent) {
-      const updated = { ...editStudent, ...newStudent };
-      if (tab === "fpm") {
-        setFpmStudents((prev) =>
-          prev.map((s) => (s.id === updated.id ? updated : s))
-        );
-      } else {
-        setSetaStudents((prev) =>
-          prev.map((s) => (s.id === updated.id ? updated : s))
-        );
-      }
-    } else {
-      const newEntry: Student = { ...newStudent, id: Date.now() };
-      if (tab === "fpm") {
-        setFpmStudents((prev) => [...prev, newEntry]);
-      } else {
-        setSetaStudents((prev) => [...prev, newEntry]);
-      }
+    if (error) {
+      console.error('Error fetching students:', error.message);
+      return;
     }
 
-    setEditStudent(null);
-    setIsPanelOpen(false);
+    // Map DB fields to table-compatible fields
+    const mapped: Student[] = (data || []).map((s) => ({
+      id: s.id,
+      name: s.studentName,
+      number: s.studentNumber,
+      position: s.course || '',
+      arrangement: '',
+      status: s.status,
+      startDate: s.startDate,
+      setaType: s.setaType,
+    }));
+
+    setFpmStudents(mapped.filter((s) => s.setaType === 'fpm-seta'));
+    setSetaStudents(mapped.filter((s) => s.setaType === 'wr-seta'));
   };
 
+  useEffect(() => {
+    fetchStudents();
+  }, [refreshKey]);
 
-  const handleDeleteStudent = () => {
+  const filterStudents = (students: Student[]) =>
+    students.filter(
+      (s) =>
+        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.number.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+  const filteredFpm = filterStudents(fpmStudents);
+  const filteredSeta = filterStudents(setaStudents);
+
+  // Delete student
+  const handleDeleteStudent = async () => {
     if (!deleteStudent) return;
-    if (tab === "fpm") {
-      setFpmStudents((prev) => prev.filter((s) => s.id !== deleteStudent.id));
-    } else {
-      setSetaStudents((prev) => prev.filter((s) => s.id !== deleteStudent.id));
+    const { error } = await supabase.from('students').delete().eq('id', deleteStudent.id);
+    if (error) {
+      console.error('Error deleting student:', error.message);
+      return;
     }
     setDeleteStudent(null);
-  }
-
+    setRefreshKey((prev) => prev + 1);
+  };
 
   return (
     <div className="container mx-auto py-5">
+      {/* Header */}
       <div className="flex flex-col items-center md:flex-row md:items-start md:justify-between gap-4">
         <div className="flex-1">
           <h2 className="text-xl font-semibold">Student Management</h2>
@@ -100,33 +97,37 @@ const StudentsPage = () => {
 
       <Separator className="my-4" />
 
-      <Tabs defaultValue="fpm" value={tab} onValueChange={setTab}>
+      {/* Tabs */}
+      <Tabs defaultValue="fpm" value={tab} onValueChange={(value) => setTab(value as 'fpm' | 'seta')}>
         <TabsList className="mb-4">
           <TabsTrigger value="fpm">FPM & SETA</TabsTrigger>
-          <TabsTrigger value="seta">WRSETA</TabsTrigger>
+          <TabsTrigger value="seta">WR & SETA</TabsTrigger>
         </TabsList>
 
         <TabsContent value="fpm">
-          {/* <DataTable columns={columns} data={filteredData} data={dataWithActions} key={refreshKey} /> */}
+          <DataTable columns={columns} key={refreshKey} data={filteredFpm} />
         </TabsContent>
 
         <TabsContent value="seta">
-          {/* <DataTable columns={columns} data={filteredData} mockData={dataWithActions} key={refreshKey} /> */}
+          <DataTable columns={columns} key={refreshKey} data={filteredSeta} />
         </TabsContent>
       </Tabs>
 
-      {/* ✅ Add the StudentPanel component here */}
+      {/* Student Panel */}
       <StudentPanel
         isOpen={isPanelOpen}
         onClose={() => setIsPanelOpen(false)}
-        onSave={handleAddStudent}
         studentCount={(tab === 'fpm' ? fpmStudents.length : setaStudents.length) + 1}
       />
+
+      {/* Delete Confirmation */}
       {deleteStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full">
             <h2 className="text-lg font-semibold mb-4">Confirm Deletion</h2>
-            <p>Are you sure you want to delete <strong>{deleteStudent.name}</strong>?</p>
+            <p>
+              Are you sure you want to delete <strong>{deleteStudent.name}</strong>?
+            </p>
             <div className="mt-6 flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDeleteStudent(null)}>
                 Cancel
@@ -138,9 +139,8 @@ const StudentsPage = () => {
           </div>
         </div>
       )}
-
     </div>
-  )
-}
+  );
+};
 
-export default StudentsPage
+export default StudentsPage;

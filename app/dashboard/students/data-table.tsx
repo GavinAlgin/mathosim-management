@@ -38,7 +38,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 import { useState } from "react";
-import { Student } from "./mock-data";
+import { Student } from "./types";
 
 interface DataTableProps {
   columns: ColumnDef<Student>[];

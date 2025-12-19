@@ -1,0 +1,54 @@
+-- students table
+create table students (
+  id uuid primary key default gen_random_uuid(),
+  student_name text not null,
+  student_number text not null unique,
+  course text not null,
+  status text default 'active',
+  start_date date not null,
+  seta_type text not null, -- "fpm-seta" or "wr-seta"
+  user_id uuid references auth.users(id),
+  created_at timestamp with time zone default now()
+);
+
+-- student_documents table
+create table student_documents (
+  id uuid primary key default gen_random_uuid(),
+  student_id uuid references students(id) on delete cascade,
+  file_url text not null,
+  file_name text not null,
+  created_at timestamp with time zone default now()
+);
+
+
+-- Enable RLS
+alter table students enable row level security;
+alter table student_documents enable row level security;
+
+-- Policy: Only allow authenticated users to manage their students
+create policy "Authenticated can manage own students"
+on students
+for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+-- Policy: Only allow authenticated users to manage their documents
+create policy "Authenticated can manage own documents"
+on student_documents
+for all
+using (
+  exists (
+    select 1 
+    from students 
+    where students.id = student_documents.student_id 
+      and students.user_id = auth.uid()
+  )
+)
+with check (
+  exists (
+    select 1 
+    from students 
+    where students.id = student_documents.student_id 
+      and students.user_id = auth.uid()
+  )
+);
