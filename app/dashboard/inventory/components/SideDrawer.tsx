@@ -96,11 +96,13 @@ const InventoryFormDrawer: React.FC<InventoryFormDrawerProps> = ({
 
       form.reset();
       onClose();
-    } catch (error: any) {
-      toast.error(error.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    }    
   };
 
   return (

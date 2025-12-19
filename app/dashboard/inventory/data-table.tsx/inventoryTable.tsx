@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { InventoryItem } from "@/hooks/types";
+
 import {
   flexRender,
   getCoreRowModel,
@@ -10,44 +11,89 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
+  Row,
 } from "@tanstack/react-table";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 
-import { DndContext, closestCenter } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
-import { useSortable } from "@dnd-kit/sortable";
+import {
+  DndContext,
+  closestCenter,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+  useSortable,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+
 import { inventoryColumns } from "../columns";
 
-const DraggableRow = ({ row, children }: any) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: row.id });
-  const style = { transform: CSS.Transform.toString(transform), transition };
+type DraggableRowProps<T> = {
+  row: Row<T>;
+  children: React.ReactNode;
+};
+
+function DraggableRow<T>({ row, children }: DraggableRowProps<T>) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: row.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
-    <TableRow ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <TableRow
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+    >
       {children}
     </TableRow>
   );
-};
+}
 
 type InventoryDataTableProps = {
   data: InventoryItem[];
 };
 
-export function InventoryDataTable({ data }: InventoryDataTableProps) {
+export function InventoryDataTable({
+  data,
+}: InventoryDataTableProps) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [tableData, setTableData] = useState<InventoryItem[]>([]);
 
-  useEffect(() => setTableData(data), [data]);
+  useEffect(() => {
+    setTableData(data);
+  }, [data]);
 
   const table = useReactTable({
     data: tableData,
     columns: inventoryColumns,
-    state: { globalFilter, sorting },
+    state: {
+      globalFilter,
+      sorting,
+    },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -56,12 +102,23 @@ export function InventoryDataTable({ data }: InventoryDataTableProps) {
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const handleDragEnd = (event: any) => {
+  /* ---------------------------------------------
+     Drag handler (fully typed)
+  ---------------------------------------------- */
+
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+
     if (!over || active.id === over.id) return;
+
     setTableData((items) => {
-      const oldIndex = items.findIndex((i) => i.id === active.id);
-      const newIndex = items.findIndex((i) => i.id === over.id);
+      const oldIndex = items.findIndex(
+        (item) => item.id === active.id
+      );
+      const newIndex = items.findIndex(
+        (item) => item.id === over.id
+      );
+
       return arrayMove(items, oldIndex, newIndex);
     });
   };
@@ -82,32 +139,51 @@ export function InventoryDataTable({ data }: InventoryDataTableProps) {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
 
-          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
             <SortableContext
-              items={table.getRowModel().rows.map((row) => row.id)}
+              items={table
+                .getRowModel()
+                .rows.map((row) => row.id)}
               strategy={verticalListSortingStrategy}
             >
               <TableBody>
                 {table.getRowModel().rows.length ? (
                   table.getRowModel().rows.map((row) => (
-                    <DraggableRow key={row.id} row={row}>
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
-                      ))}
+                    <DraggableRow<InventoryItem>
+                      key={row.id}
+                      row={row}
+                    >
+                      {row
+                        .getVisibleCells()
+                        .map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
                     </DraggableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={inventoryColumns.length} className="text-center h-24">
+                    <TableCell
+                      colSpan={inventoryColumns.length}
+                      className="h-24 text-center"
+                    >
                       No results.
                     </TableCell>
                   </TableRow>
@@ -128,9 +204,12 @@ export function InventoryDataTable({ data }: InventoryDataTableProps) {
           <ArrowLeftIcon className="mr-2" />
           Previous
         </Button>
+
         <span className="text-sm">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          {table.getPageCount()}
         </span>
+
         <Button
           variant="outline"
           size="sm"
