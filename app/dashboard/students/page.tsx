@@ -36,29 +36,44 @@ const StudentsPage: React.FC = () => {
     // Map DB fields to table-compatible fields
     const mapped: Student[] = (data || []).map((s) => ({
       id: s.id,
-      name: s.studentName,
-      number: s.studentNumber,
+      name: s.student_Name,
+      number: s.student_number,
       position: s.course || '',
       arrangement: '',
       status: s.status,
-      startDate: s.startDate,
-      setaType: s.setaType,
+      startDate: s.start_date ?? '',
+      setaType: s.seta_type ?? '',
     }));
 
-    setFpmStudents(mapped.filter((s) => s.setaType === 'fpm-seta'));
-    setSetaStudents(mapped.filter((s) => s.setaType === 'wr-seta'));
+    setFpmStudents(
+      mapped.filter((s) => s.setaType === 'fpm-seta')
+    );
+    
+    setSetaStudents(
+      mapped.filter((s) => s.setaType === 'wr-seta')
+    );
+    
   };
 
   useEffect(() => {
     fetchStudents();
   }, [refreshKey]);
 
+  // const filterStudents = (students: Student[]) =>
+  //   students.filter(
+  //     (s) =>
+  //       s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       s.number.toLowerCase().includes(searchTerm.toLowerCase())
+  //   );
   const filterStudents = (students: Student[]) =>
-    students.filter(
-      (s) =>
-        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.number.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    students.filter((s) => {
+      const name = (s.name ?? '').toLowerCase();
+      const number = (s.number ?? '').toLowerCase();
+      const term = searchTerm.toLowerCase();
+
+      return name.includes(term) || number.includes(term);
+    });
+
 
   const filteredFpm = filterStudents(fpmStudents);
   const filteredSeta = filterStudents(setaStudents);
