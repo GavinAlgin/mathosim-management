@@ -15,12 +15,14 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Loader2 } from "lucide-react";
 
+type TabType = "account" | "security" | "notifications";
+
 export default function SettingsPage() {
-  const [tab, setTab] = useState<"account" | "security" | "notifications">("account");
+  const [tab, setTab] = useState<TabType>("account");
   const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
 
-  /** Check logged in user sessions */
+  /** Check logged-in user sessions */
   useEffect(() => {
     const checkSession = async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -37,16 +39,16 @@ export default function SettingsPage() {
   }, [router]);
 
   if (checkingAuth) {
-    return (     
-    <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
-      <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
-    </div>
-    )
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+      </div>
+    );
   }
 
   return (
     <div className="w-full mx-auto py-8 space-y-6">
-      {/* 🚧 Notifications header */}
+      {/* Notifications header */}
       <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
         <p className="text-yellow-700 font-medium">
           ⚠️ Our organization is still working on the settings page. Some features may not be available yet.
@@ -54,7 +56,11 @@ export default function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={tab} onValueChange={(v) => setTab(v)} className="max-w-xl">
+      <Tabs
+        value={tab}
+        onValueChange={(v) => setTab(v as TabType)}
+        className="max-w-xl"
+      >
         <TabsList className="w-full">
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
@@ -66,7 +72,7 @@ export default function SettingsPage() {
           <section>
             <h2 className="text-xl font-semibold">Profile Info</h2>
             <p className="text-[12px] text-gray-400 mb-4">Manage your profile account</p>
-            <Separator className="mb-6"/>
+            <Separator className="mb-6" />
             <UpdateAccountForm />
           </section>
           <Separator />
@@ -81,7 +87,7 @@ export default function SettingsPage() {
           <section>
             <h2 className="text-xl font-semibold">Security Settings</h2>
             <p className="text-[12px] text-gray-400 mb-4">Manage your profile security and devices</p>
-            <Separator className="mb-6"/>
+            <Separator className="mb-6" />
             <SecuritySettings />
           </section>
           <Separator />
@@ -93,9 +99,9 @@ export default function SettingsPage() {
 
         {/* Notifications Tab */}
         <TabsContent value="notifications" className="space-y-8 pt-4">
-            <h2 className="text-xl font-semibold">Notifications Settings</h2>
-            <p className="text-[12px] text-gray-400 mb-4">Enable and disable notifications settings</p>
-            <Separator className="mb-6"/>
+          <h2 className="text-xl font-semibold">Notifications Settings</h2>
+          <p className="text-[12px] text-gray-400 mb-4">Enable and disable notifications settings</p>
+          <Separator className="mb-6" />
           <NotificationSettings />
         </TabsContent>
       </Tabs>
