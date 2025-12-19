@@ -5,12 +5,12 @@ import { FileVolume, Loader2, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InventoryItem } from "@/hooks/types";
 import { useState, useEffect } from "react";
-import { getInventory } from "./data-table.tsx/inventory";
 import InventoryFormDrawer from "./components/SideDrawer";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { InventoryDataTable } from "./data-table.tsx/inventoryTable";
 import { toast } from "sonner";
+import { getInventory } from "./data-table.tsx/inventory";
 
 const Inventorypage = () => {
   const router = useRouter();
@@ -19,7 +19,6 @@ const Inventorypage = () => {
   const [data, setData] = useState<InventoryItem[]>([]);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [loading, setLoading] = useState(true);
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
   /** Check logged in user sessions */
   useEffect(() => {
@@ -37,29 +36,16 @@ const Inventorypage = () => {
     checkSession();
   }, [router]);
 
-  // useEffect(() => {
-  //   async function load() {
-  //     const items = await getInventory();
-  //     setData(items);
-  //   }
-  //   load();
-  // }, []);
-    // 🔹 INITIAL FETCH
+  // Fetch inventory from Supabase
   useEffect(() => {
     const fetchInventory = async () => {
       setLoading(true);
 
-      const { data, error } = await supabase
-        .from("inventory")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
+      try {
+        const items = await getInventory();
+        setData(items); // data now has itemName and modelNum
+      } catch (error) {
         toast.error("Failed to load inventory");
-      } else {
-        setInventory(
-          data.map(mapDbToItem)
-        );
       }
 
       setLoading(false);
@@ -78,11 +64,11 @@ const Inventorypage = () => {
   };
 
   if (checkingAuth) {
-    return (    
-    <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
-      <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
-    </div>
-    )
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+      </div>
+    );
   }
 
   return (
@@ -92,7 +78,7 @@ const Inventorypage = () => {
         <div className="flex-1">
           <h2 className="text-xl font-semibold">Inventory Management</h2>
           <p className="text-[16px] text-gray-500">
-            Insert, View and manage equipments with easy search, filter, and bulk action options.
+            Insert, View and manage equipment with easy search, filter, and bulk action options.
           </p>
         </div>
 
@@ -124,6 +110,7 @@ const Inventorypage = () => {
 };
 
 export default Inventorypage;
+
 
 // "use client";
 
